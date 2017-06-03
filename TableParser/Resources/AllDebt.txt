@@ -1,0 +1,88 @@
+select --top 10
+
+ debt.id[debt_ID]
+,person.id[person_ID]
+
+,debt.contract[№ Договора]
+,SUBSTRING (debt.contract,0,9)[debt.midas]
+
+,person.f
+,person.i
+,person.o
+
+--==================
+,person.f +' '+person.i+' '+person.o fio
+,bank.name банк
+,portfolio.name портфель
+,debt.account счет
+,debt.ext_id [ID клиента]
+
+
+--==================
+
+,person.birth_date
+,passport.series
+,passport.number
+,dict_status.name Статус
+
+
+
+,dict_currency.name [Валюта кредита]
+
+,interest_rate [процентная ставка по кредиту]
+,debt_sum [сумма необходимая к погашению]
+,total_sum [полный размер кредита]
+,min_sum [возможная минимальная сумма платежа]
+,start_sum [начальная сумма, необходимая к погашению (не изменяется)]
+,basic_sum [основной долг]
+,exp_basic_sum [просроченный основной долг]
+,percent_sum [проценты]
+,exp_percent_sum [просроченные проценты]
+,penalty_sum [штрафы]
+,peni_sum [пени]
+,commission_sum [комиссия]
+,due_sum [гос.пошлина]
+,total_rest [остаток основного долга]
+,exp_commission_sum [просроченная комиссия]
+,debt_sum_extra [переплата]
+,last_pay_sum [сумма полследнего платежа]
+,sum_on_bank_account [сумма остатка на счете заемщика]
+,annuity_pay [сумма аннуитетного платежа]
+,fine_sum [единовременный штраф]
+,next_pay_sum [сумма следующего платежа]
+,case when person.dsc ='Отзыв персональных данных - НЕ ЗВОНИТЬ!!!' then 'Отзыв персональных данных - НЕ ЗВОНИТЬ!!!' else ''end  person_dsc
+,users.login Оператор
+from debt
+join dict dict_status on
+		dict_status.parent_id=6
+	and dict_status.code = debt.status
+join person on debt.parent_id = person.id
+join dict dict_currency on
+		dict_currency.parent_id=280
+	and dict_currency.code = debt.currency
+join portfolio on debt.r_portfolio_id=portfolio.id
+join bank on portfolio.parent_id= bank.id
+left join passport on person.r_passport_id=passport.id
+left join random_value on 
+		random_value.r_debt_id = debt.id
+	and random_value.typ=94
+left join work_task on work_task.r_debt_id=debt.id
+left join users on users.id=work_task.r_user_id
+
+where 1=1
+--and debt.id in (select id from [#from_file])
+--and SUBSTRING (debt.contract,0,9)='01669259'
+and dict_status.code!=7
+/*
+and debt.contract in (
+
+ '00282672RURRM10001'
+,'00621351RURPROC102'
+,'00621351RURRA10002'
+,'00621351RURRA10003'
+,'01049242RURRA11001'
+
+
+
+)
+*/
